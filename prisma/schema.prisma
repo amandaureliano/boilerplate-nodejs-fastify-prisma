@@ -13,15 +13,152 @@ datasource db {
 enum Role {
   ADMIN
   MEMBER
+  MOD
+}
+
+enum Type {
+  UP
+  DOWN
+}
+
+model Category {
+  id                 String   @id @db.Uuid @default(uuid())
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt()
+
+  name               String   @db.VarChar() @unique
+
+  users              User[]
+  posts              Post[]
+
+  @@map("categories")
 }
 
 model User {
-  id            String   @id @default(uuid())
-  name          String
-  email         String   @unique
-  password_hash String
-  role          Role     @default(MEMBER)
-  created_at    DateTime @default(now())
+  id                 String   @id @db.Uuid @default(uuid())
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt()
+
+  username           String      @db.VarChar()
+  email              String      @unique
+  about              String?     @db.VarChar()
+  avatar             String?     @db.VarChar()
+  category           Category?   @relation(fields: [category_id] ,references: [id])
+  category_id        String?     @db.Uuid
+  password_hash      String      @db.VarChar()
+  role               Role        @default(MEMBER)
+
+  posts              Post[]
+  followers          Follow[]    @relation("Followers")
+  followeds          Follow[]    @relation("Followeds")
+  thumbs             Thumb[]
+  reactions          Reaction[]
+  saves              Save[]
+  complaint_user     Complaint[] @relation("Users")
+  complaint_mod_user Complaint[] @relation("Mods")
 
   @@map("users")
+}
+
+model Post {
+  id                 String   @id @db.Uuid @default(uuid())
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt()
+
+  user               User      @relation(fields: [user_id], references: [id])
+  user_id            String    @db.Uuid
+  text               String
+  post_reference     Post?     @relation("PostReference", fields: [post_reference_id], references: [id])
+  post_reference_id  String?   @db.Uuid
+  is_shared          Boolean
+  category           Category  @relation(fields: [category_id] ,references: [id])
+  category_id        String    @db.Uuid
+
+  posts              Post[]    @relation("PostReference")
+  thumbs             Thumb[]
+  reactions          Reaction[]
+  saves              Save[]
+  complaints         Complaint[]
+
+  @@map("posts")
+}
+
+model Follow {
+  id                 String   @id @db.Uuid @default(uuid())
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt()
+
+  follower           User     @relation("Followers", fields: [follower_id], references: [id])
+  follower_id        String   @db.Uuid
+  followed           User     @relation("Followeds", fields: [followed_id], references: [id])
+  followed_id        String   @db.Uuid
+
+  @@map("followers")
+}
+
+model Thumb {
+  id                 String   @id @db.Uuid @default(uuid())
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt()
+
+  publication        Post     @relation(fields: [publication_id], references: [id])
+  publication_id     String   @db.Uuid
+  type               Type
+  user               User     @relation(fields: [user_id], references: [id])
+  user_id            String   @db.Uuid
+
+  @@map("thumbs")
+}
+
+model Reaction {
+  id                  String   @id @db.Uuid @default(uuid())
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt()
+
+  publication         Post     @relation(fields: [publication_id], references: [id])
+  publication_id      String   @db.Uuid
+  user                User     @relation(fields: [user_id], references: [id])
+  user_id             String   @db.Uuid
+  reaction            String   @db.VarChar()
+
+  @@map("reactions")
+}
+
+model Save {
+  id                  String   @id @db.Uuid @default(uuid())
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt()
+
+  publication         Post     @relation(fields: [publication_id], references: [id])
+  publication_id      String   @db.Uuid
+  user                User     @relation(fields: [user_id], references: [id])
+  user_id             String   @db.Uuid
+
+  @@map("saves")
+}
+
+model Complaint {
+  id                  String   @id @db.Uuid @default(uuid())
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt()
+
+  publication         Post     @relation(fields: [publication_id], references: [id])
+  publication_id      String   @db.Uuid
+  user                User     @relation("Users", fields: [user_id], references: [id])
+  user_id             String   @db.Uuid
+  text                String
+  category_complaint  String
+  mod                 User?    @relation("Mods", fields: [mod_id], references: [id])
+  mod_id              String?  @db.Uuid
+
+  @@map("complaints")
+}
+
+model ComplaintCategory {
+  id                  String   @id @db.Uuid @default(uuid())
+  created_at          DateTime @default(now())
+  updated_at          DateTime @updatedAt()
+  name                String   @db.VarChar() @unique
+
+  @@map("complaints_category")
 }
