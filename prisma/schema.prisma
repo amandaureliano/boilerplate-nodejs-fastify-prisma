@@ -39,7 +39,7 @@ model User {
   created_at         DateTime @default(now())
   updated_at         DateTime @updatedAt()
 
-  username           String      @db.VarChar()
+  username           String      @db.VarChar() @unique
   email              String      @unique
   about              String?     @db.VarChar()
   avatar             String?     @db.VarChar()
