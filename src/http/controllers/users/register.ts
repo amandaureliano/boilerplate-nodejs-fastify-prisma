@@ -5,19 +5,19 @@ import { makeRegisterService } from '@/services/factories/make-register-service'
 
 export async function register(request: FastifyRequest, reply: FastifyReply) {
   const registerBodySchema = z.object({
-    name: z.string(),
+    username: z.string(),
     email: z.string().email(),
     password: z.string().min(6),
   })
 
-  const { email, name, password } = registerBodySchema.parse(request.body)
+  const { email, username, password } = registerBodySchema.parse(request.body)
 
   try {
     const registerService = makeRegisterService()
 
     await registerService.execute({
       email,
-      name,
+      username,
       password,
     })
   } catch (error) {

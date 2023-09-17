@@ -4,7 +4,7 @@ import { UserAlreadyExistsError } from './errors/user-already-exists-error'
 import { User } from '@prisma/client'
 
 interface RegisterServiceRequest {
-  name: string
+  username: string
   email: string
   password: string
 }
@@ -17,7 +17,7 @@ export class RegisterService {
 
   async execute({
     email,
-    name,
+    username,
     password,
   }: RegisterServiceRequest): Promise<RegisterServiceResponse> {
     const password_hash = await hash(password, 6)
@@ -30,7 +30,7 @@ export class RegisterService {
 
     const user = await this.usersRepository.create({
       email,
-      name,
+      username,
       password_hash,
     })
 
